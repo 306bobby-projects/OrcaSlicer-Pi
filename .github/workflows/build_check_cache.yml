@@ -51,8 +51,8 @@ jobs:
 
           echo "Calculated DEP_FOLDER_NAME: $DEP_FOLDER_NAME"
 
-          echo "cache-key=${{ inputs.os }}-${{ inputs.arch }}-cache-orcaslicer_deps-build-${{ hashFiles('deps/**') }}" >> $OUTPUT_CMD
-          echo "cache-path=${{ github.workspace }}/deps/build$DEP_FOLDER_NAME" >> $OUTPUT_CMD
+          echo "cache-key=${{ inputs.os }}-${{ inputs.arch }}-cache-orcaslicer_deps-build-${{ hashFiles('deps/**') }}" >> ${{ env.output-cmd }}
+          echo "cache-path=${{ github.workspace }}/deps/build$DEP_FOLDER_NAME" >> ${{ env.output-cmd }}
             
       - name: load cache
         id: cache_deps
