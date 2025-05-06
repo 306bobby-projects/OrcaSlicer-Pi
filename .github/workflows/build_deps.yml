@@ -115,7 +115,6 @@ jobs:
 
       - name: Install build dependencies for Raspberry Pi OS (QEMU)
         if: inputs.os == 'rpi-os-arm64'
-        working-directory: ${{ github.workspace }}
         uses: pguyot/arm-runner-action@v2
         with:
           base_image: raspios_lite_arm64:latest # Ensure this matches your target
@@ -134,7 +133,6 @@ jobs:
 
       - name: Build for Raspberry Pi OS (QEMU)
         if: inputs.os == 'rpi-os-arm64'
-        working-directory: ${{ github.workspace }}
         uses: pguyot/arm-runner-action@v2
         with:
           base_image: raspios_lite_arm64:latest # Ensure this matches your target
