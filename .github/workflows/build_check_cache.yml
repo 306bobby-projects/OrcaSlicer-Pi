@@ -16,11 +16,13 @@ on:
 jobs:
   check_cache: # determines if there is a cache and outputs variables used in caching process
     name: Check Cache
-    runs-on: ${{ inputs.os }}
+    runs-on: ${{ inputs.os == 'windows-latest' && 'windows-latest' || inputs.os == 'macos-14' && 'macos-14' || 'ubuntu-latest' }}
     outputs:
       cache-key: ${{ steps.set_outputs.outputs.cache-key }}
       cache-path: ${{ steps.set_outputs.outputs.cache-path }}
       valid-cache: ${{ steps.cache_deps.outputs.cache-hit }}
+      os: ${{ inputs.os }}
+      arch: ${{ inputs.arch }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,12 +32,27 @@ jobs:
       - name: set outputs
         id: set_outputs
         env:
-          # todo: this is mad! refactor other build scripts to use same name
-          dep-folder-name: ${{ inputs.os == 'windows-latest' && '/OrcaSlicer_dep' || inputs.os == 'macos-14' && '' || inputs.os != 'macos-14' && '/destdir' || '' }}
-          output-cmd: ${{ inputs.os == 'windows-latest' && '$env:GITHUB_OUTPUT' || '"$GITHUB_OUTPUT"'}}
+          OS_INPUT: ${{ inputs.os }} # Use an intermediate env var for cleaner multi-line conditions
         run: |
-          echo cache-key=${{ inputs.os }}-cache-orcaslicer_deps-build-${{ hashFiles('deps/**') }} >> ${{ env.output-cmd }}
-          echo cache-path=${{ github.workspace }}/deps/build${{ env.dep-folder-name }} >> ${{ env.output-cmd }}
+          DEP_FOLDER_NAME=""
+          if [ "$OS_INPUT" = "windows-latest" ]; then
+            DEP_FOLDER_NAME='/OrcaSlicer_dep'
+          elif [ "$OS_INPUT" = "macos-14" ]; then
+            DEP_FOLDER_NAME='' # Mac deps seem to be in deps/build directly based on build_deps.yml
+          else # Default for ubuntu-20.04, ubuntu-24.04
+            DEP_FOLDER_NAME='/destdir'
+          fi
+
+          # Use PowerShell for GITHUB_OUTPUT on Windows, bash for others
+          OUTPUT_CMD="\$GITHUB_OUTPUT"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            OUTPUT_CMD="\$env:GITHUB_OUTPUT"
+          fi
+
+          echo "Calculated DEP_FOLDER_NAME: $DEP_FOLDER_NAME"
+
+          echo "cache-key=${{ inputs.os }}-${{ inputs.arch }}-cache-orcaslicer_deps-build-${{ hashFiles('deps/**') }}" >> $OUTPUT_CMD
+          echo "cache-path=${{ github.workspace }}/deps/build$DEP_FOLDER_NAME" >> $OUTPUT_CMD
             
       - name: load cache
         id: cache_deps
@@ -53,7 +70,7 @@ jobs:
       cache-key: ${{ needs.check_cache.outputs.cache-key }}
       cache-path: ${{ needs.check_cache.outputs.cache-path }}
       valid-cache: ${{ needs.check_cache.outputs.valid-cache == 'true' }}
-      os: ${{ inputs.os }}
-      arch: ${{ inputs.arch }}
+      os: ${{ needs.check_cache.outputs.os }} # Pass through from check_cache
+      arch: ${{ needs.check_cache.outputs.arch }} # Pass through from check_cache
       build-deps-only: ${{ inputs.build-deps-only }}
     secrets: inherit

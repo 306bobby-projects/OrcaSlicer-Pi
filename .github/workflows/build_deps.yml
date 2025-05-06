@@ -14,7 +14,7 @@ on:
         required: true
         type: string
       arch:
-        required: false
+        required: true
         type: string
       build-deps-only:
         required: false
@@ -24,7 +24,7 @@ jobs:
   build_deps:
     name: Build Deps
     if: inputs.build-deps-only || inputs.valid-cache != true
-    runs-on: ${{ inputs.os }}
+    runs-on: ${{ (inputs.os == 'windows-latest' && 'windows-latest') || (inputs.os == 'macos-14' && 'macos-14') || 'ubuntu-latest' }}
     env:
       date:
     steps:
@@ -111,6 +111,48 @@ jobs:
             cd deps/build
             tar -czvf OrcaSlicer_dep_ubuntu_$(date +"%Y%m%d").tar.gz destdir
 
+      # --- Raspberry Pi OS (via QEMU) Dependency Build ---
+
+      - name: Install build dependencies for Raspberry Pi OS (QEMU)
+        if: inputs.os == 'rpi-os-arm64'
+        working-directory: ${{ github.workspace }}
+        uses: pguyot/arm-runner-action@v2# Or latest version
+        with:
+          base_image: raspios_lite_arm64:latest # Ensure this matches your target
+          commands: |
+            echo "--- Installing base dependencies ---"
+            sudo apt-get update -y
+            sudo apt-get install -y \
+              autoconf build-essential cmake curl eglexternalplatform-dev \
+              extra-cmake-modules file git g++ libcairo2-dev libcurl4-openssl-dev \
+              libdbus-1-dev libglew-dev libglu1-mesa-dev libgstreamer1.0-dev \
+              libgstreamer-plugins-base1.0-dev libgstreamer-plugins-good1.0-dev \
+              gstreamer1.0-plugins-bad libgtk-3-dev libmspack-dev libosmesa6-dev \
+              libsecret-1-dev libsoup2.4-dev libssl-dev libudev-dev libunwind-dev \
+              libwayland-dev libwebkit2gtk-4.1-dev libxkbcommon-dev locales \
+              locales-all m4 pkgconf sudo texinfo wayland-protocols wget libfuse2t64
+
+      - name: Build for Raspberry Pi OS (QEMU)
+        if: inputs.os == 'rpi-os-arm64'
+        working-directory: ${{ github.workspace }}
+        uses: pguyot/arm-runner-action@v2# Or latest version
+        with:
+          base_image: raspios_lite_arm64:latest # Ensure this matches your target
+          commands: |
+            echo "--- Building RPi Dependencies in QEMU ---"
+            echo "Target cache path structure on host: ${{ inputs.cache-path }}"
+            echo "Running as user: $(whoami) in $(pwd)"
+
+            echo "--- Running BuildLinux.sh to build source dependencies ---"
+            mkdir -p ${{ github.workspace }}/deps/build
+            mkdir -p ${{ github.workspace }}/deps/build/destdir
+            sudo ./BuildLinux.sh -ur
+            sudo chown $USER -R ./
+            ./BuildLinux.sh -dr
+            cd deps/build
+            tar -czvf OrcaSlicer_dep_ubuntu_$(date +"%Y%m%d").tar.gz destdir
+
+            echo "--- RPi Dependencies Build in QEMU Finished ---"
 
       # Upload Artifacts
       # - name: Upload Mac ${{ inputs.arch }} artifacts
@@ -119,6 +161,13 @@ jobs:
       #   with:
       #     name: OrcaSlicer_dep_mac_${{ env.date }}
       #     path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep*.tar.gz
+
+      - name: Upload RPi OS arm64 deps artifacts
+        if: inputs.os == 'rpi-os-arm64' && inputs.build-deps-only
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrcaSlicer_dep_rpi_os_arm64_${{ env.date }}
+          path: ${{ inputs.cache-path }}
 
       - name: Upload Windows artifacts
         if: inputs.os == 'windows-latest'
