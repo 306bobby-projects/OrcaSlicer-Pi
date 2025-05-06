@@ -24,7 +24,7 @@ jobs:
   build_deps:
     name: Build Deps
     if: inputs.build-deps-only || inputs.valid-cache != true
-    runs-on: ${{ (inputs.os == 'windows-latest' && 'windows-latest') || (inputs.os == 'macos-14' && 'macos-14') || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.os == 'windows-latest' && 'windows-latest' || inputs.os == 'macos-14' && 'macos-14' || inputs.os == 'ubuntu-24.04' && 'ubuntu-24.04' || 'ubuntu-22.04' }}
     env:
       date:
     steps:

@@ -17,7 +17,7 @@ on:
 jobs:
   build_orca:
     name: Build OrcaSlicer
-    runs-on: ${{ (inputs.os == 'windows-latest' && 'windows-latest') || (inputs.os == 'macos-14' && 'macos-14') || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.os == 'windows-latest' && 'windows-latest' || inputs.os == 'macos-14' && 'macos-14' || inputs.os == 'ubuntu-24.04' && 'ubuntu-24.04' || 'ubuntu-22.04' }}
     env:
       date:
       ver:
@@ -39,7 +39,7 @@ jobs:
       - uses: lukka/get-cmake@latest
         with:
           cmakeVersion: "~3.28.0"  # use most recent 3.28.x version
-          
+
       - name: Get the version and date on Ubuntu, macOS, and RPi
         if: inputs.os != 'windows-latest'
         run: |
