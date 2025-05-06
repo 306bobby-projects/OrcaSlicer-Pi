@@ -55,6 +55,9 @@ jobs:
           - os: windows-latest
           - os: macos-14
             arch: arm64
+          - os: rpi-os-arm64
+            arch: arm64
+            runner: ubuntu-latest
     uses: ./.github/workflows/build_check_cache.yml
     with:
       os: ${{ matrix.os }}
