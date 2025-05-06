@@ -33,6 +33,7 @@ jobs:
         id: set_outputs
         env:
           OS_INPUT: ${{ inputs.os }} # Use an intermediate env var for cleaner multi-line conditions
+          output-cmd: '"$GITHUB_OUTPUT"'
         run: |
           DEP_FOLDER_NAME=""
           if [ "$OS_INPUT" = "windows-latest" ]; then
