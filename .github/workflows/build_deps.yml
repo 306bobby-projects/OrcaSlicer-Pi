@@ -117,7 +117,7 @@ jobs:
         if: inputs.os == 'rpi-os-arm64'
         uses: pguyot/arm-runner-action@v2
         with:
-          base_image: raspios_lite_arm64:latest # Ensure this matches your target
+          base_image: dietpi:rpi_armv8_bullseye # Ensure this matches your target
           commands: |
             echo "--- Installing base dependencies ---"
             sudo apt-get update -y
@@ -135,7 +135,7 @@ jobs:
         if: inputs.os == 'rpi-os-arm64'
         uses: pguyot/arm-runner-action@v2
         with:
-          base_image: raspios_lite_arm64:latest # Ensure this matches your target
+          base_image: dietpi:rpi_armv8_bullseye # Ensure this matches your target
           commands: |
             echo "--- Building RPi Dependencies in QEMU ---"
             echo "Target cache path structure on host: ${{ inputs.cache-path }}"

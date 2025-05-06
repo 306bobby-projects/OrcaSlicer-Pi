@@ -323,7 +323,7 @@ jobs:
         if: inputs.os == 'rpi-os-arm64'
         uses: pguyot/arm-runner-action@v2
         with:
-          base_image: raspios_lite_arm64:latest
+          base_image: dietpi:rpi_armv8_bullseye
           # The workspace is mounted, including inputs.cache-path (e.g., deps/build/rpi_destdir)
           commands: |
             apt-get update
@@ -337,21 +337,21 @@ jobs:
         if: inputs.os == 'rpi-os-arm64'
         uses: pguyot/arm-runner-action@v2
         with:
-          base_image: raspios_lite_arm64:latest
+          base_image: dietpi:rpi_armv8_bullseye
           commands: sudo ./BuildLinux.sh -ur
 
       - name: Fix permissions
         if: inputs.os == 'rpi-os-arm64'
         uses: pguyot/arm-runner-action@v2
         with:
-          base_image: raspios_lite_arm64:latest
+          base_image: dietpi:rpi_armv8_bullseye
           commands: sudo chown $USER -R ./
 
       - name: Build slicer
         if: inputs.os == 'rpi-os-arm64'
         uses: pguyot/arm-runner-action@v2
         with:
-          base_image: raspios_lite_arm64:latest
+          base_image: dietpi:rpi_armv8_bullseye
           commands: |
             ./BuildLinux.sh -isr
             mv -n ./build/OrcaSlicer_Linux_V${{ env.ver_pure }}.AppImage ./build/OrcaSlicer_Linux_AppImage${{ env.ubuntu-ver-str }}_${{ env.ver }}.AppImage
@@ -361,7 +361,7 @@ jobs:
         if: inputs.os == 'rpi-os-arm64'
         uses: pguyot/arm-runner-action@v2
         with:
-          base_image: raspios_lite_arm64:latest
+          base_image: dietpi:rpi_armv8_bullseye
           commands: |
             ./OrcaSlicer_profile_validator -p ${{ github.workspace }}/resources/profiles -g 1
             cd ${{ github.workspace }}/resources/profiles
